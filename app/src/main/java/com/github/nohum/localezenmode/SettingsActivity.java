@@ -13,8 +13,11 @@ import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
 import android.util.Log;
+import android.view.View;
+import android.widget.Button;
+import android.widget.TextView;
 
-public class SettingsActivity extends AppCompatActivity {
+public class SettingsActivity extends AppCompatActivity implements View.OnClickListener {
 
     private static final String TAG = "ZenModeActivity";
 
@@ -27,17 +30,34 @@ public class SettingsActivity extends AppCompatActivity {
 
     private ResultReceiver receiver;
 
+    private TextView lastZenState;
+
+    private Button btnZenAll;
+
+    private Button btnZenPriority;
+
+    private Button btnZenNone;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_settings);
+
+        lastZenState = (TextView) findViewById(R.id.last_zen_state);
+        btnZenAll = (Button) findViewById(R.id.btn_zen_all);
+        btnZenPriority = (Button) findViewById(R.id.btn_zen_priority);
+        btnZenNone = (Button) findViewById(R.id.btn_zen_none);
+
+        btnZenAll.setOnClickListener(this);
+        btnZenPriority.setOnClickListener(this);
+        btnZenNone.setOnClickListener(this);
     }
 
     @Override
     protected void onResume() {
         super.onResume();
 
-        IntentFilter filter = new IntentFilter(ZenModeNotificationService.ACTION_RESPONSE_INTERRUPTION_SETTING);
+        IntentFilter filter = new IntentFilter(ZenModeNotificationService.ACTION_RESPONSE_CURRENT_ZENMODE);
         receiver = new ResultReceiver();
         LocalBroadcastManager.getInstance(this).registerReceiver(receiver, filter);
 
@@ -46,7 +66,7 @@ public class SettingsActivity extends AppCompatActivity {
         } else {
             Log.i(TAG, "asking for current interruption mode");
 
-            Intent request = new Intent(ZenModeNotificationService.ACTION_REQUEST_INTERRUPTION_SETTING);
+            Intent request = new Intent(ZenModeNotificationService.ACTION_REQUEST_CURRENT_ZENMODE);
             LocalBroadcastManager.getInstance(this).sendBroadcast(request);
         }
     }
@@ -54,7 +74,6 @@ public class SettingsActivity extends AppCompatActivity {
     @Override
     protected void onPause() {
         LocalBroadcastManager.getInstance(this).unregisterReceiver(receiver);
-
         super.onPause();
     }
 
@@ -100,17 +119,48 @@ public class SettingsActivity extends AppCompatActivity {
         return false;
     }
 
+    @Override
+    public void onClick(View v) {
+        if (v.equals(btnZenAll)) {
+            requestZenMode(ZenModeNotificationService.INTERRUPTION_FILTER_ALL);
+        } else if (v.equals(btnZenPriority)) {
+            requestZenMode(ZenModeNotificationService.INTERRUPTION_FILTER_PRIORITY);
+        } else if (v.equals(btnZenNone)) {
+            requestZenMode(ZenModeNotificationService.INTERRUPTION_FILTER_NONE);
+        }
+    }
+
+    private void requestZenMode(int mode) {
+        Log.i(TAG, "request interruption mode update to: " + mode);
+
+        Intent request = new Intent(ZenModeNotificationService.ACTION_REQUEST_SET_ZENMODE);
+        request.putExtra(ZenModeNotificationService.EXTRA_ZENMODE_SETTING, mode);
+
+        LocalBroadcastManager.getInstance(this).sendBroadcast(request);
+    }
+
     private class ResultReceiver extends BroadcastReceiver {
 
         @Override
         public void onReceive(Context context, Intent intent) {
             Log.i(TAG, "onReceive() called with action = [" + intent.getAction() + "]");
 
-            if (ZenModeNotificationService.ACTION_RESPONSE_INTERRUPTION_SETTING.equals(intent.getAction())) {
-                int mode = intent.getIntExtra(ZenModeNotificationService.EXTRA_INTERRUPTION_SETTING, -1);
+            if (ZenModeNotificationService.ACTION_RESPONSE_CURRENT_ZENMODE.equals(intent.getAction())) {
+                int mode = intent.getIntExtra(ZenModeNotificationService.EXTRA_ZENMODE_SETTING, -1);
 
                 Log.i(TAG, "got back response about interruption setting: " + mode);
+                lastZenState.setText(getString(R.string.last_zen_state, modeToString(mode)));
             }
         }
+    }
+
+    private String modeToString(int mode) {
+        switch (mode) {
+            case ZenModeNotificationService.INTERRUPTION_FILTER_ALL: return getString(R.string.current_state_all);
+            case ZenModeNotificationService.INTERRUPTION_FILTER_PRIORITY: return getString(R.string.current_state_priority);
+            case ZenModeNotificationService.INTERRUPTION_FILTER_NONE: return getString(R.string.current_state_none);
+        }
+
+        return getString(R.string.current_state_unknown);
     }
 }

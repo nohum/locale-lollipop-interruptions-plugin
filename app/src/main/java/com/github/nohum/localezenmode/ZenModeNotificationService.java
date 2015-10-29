@@ -6,7 +6,6 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.IBinder;
 import android.service.notification.NotificationListenerService;
-import android.service.notification.StatusBarNotification;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
@@ -14,25 +13,29 @@ public class ZenModeNotificationService extends NotificationListenerService {
 
     private static final String TAG = "ZenModeService";
 
-    public static final String ACTION_REQUEST_INTERRUPTION_SETTING = "com.github.nohum.localezenmode.REQUEST_INTERRUPTION_SETTING";
+    public static final String ACTION_REQUEST_CURRENT_ZENMODE = "com.github.nohum.localezenmode.REQUEST_CURRENT_ZENMODE";
 
-    public static final String ACTION_RESPONSE_INTERRUPTION_SETTING = "com.github.nohum.localezenmode.RESPONSE_INTERRUPTION_SETTING";
+    public static final String ACTION_RESPONSE_CURRENT_ZENMODE = "com.github.nohum.localezenmode.RESPONSE_CURRENT_ZENMODE";
 
-    public static final String EXTRA_INTERRUPTION_SETTING = "interruptionSetting";
+    public static final String ACTION_REQUEST_SET_ZENMODE = "com.github.nohum.localezenmode.REQUEST_SET_ZENMODE";
+
+    public static final String EXTRA_ZENMODE_SETTING = "zenModeSetting";
 
     private CommandReceiver receiver;
 
-    private int currentInterruptionFilter = 0;
+    private int currentZenMode = 0;
 
     public ZenModeNotificationService() {
-        Log.d(TAG, "constructor()");
+        // pass
     }
 
     @Override
     public void onCreate() {
         super.onCreate();
 
-        IntentFilter filter = new IntentFilter(ACTION_REQUEST_INTERRUPTION_SETTING);
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(ACTION_REQUEST_CURRENT_ZENMODE);
+        filter.addAction(ACTION_REQUEST_SET_ZENMODE);
         receiver = new CommandReceiver();
         LocalBroadcastManager.getInstance(this).registerReceiver(receiver, filter);
 
@@ -49,7 +52,6 @@ public class ZenModeNotificationService extends NotificationListenerService {
 
     @Override
     public IBinder onBind(Intent intent) {
-        Log.d(TAG, "onBind");
         return super.onBind(intent);
     }
 
@@ -57,18 +59,15 @@ public class ZenModeNotificationService extends NotificationListenerService {
     public void onListenerConnected() {
         Log.d(TAG, "onListenerConnected");
 
-        currentInterruptionFilter = getCurrentInterruptionFilter();
+        currentZenMode = getCurrentInterruptionFilter();
     }
 
     @Override
     public void onInterruptionFilterChanged(int interruptionFilter) {
         Log.i(TAG, "onInterruptionFilterChanged() called with " + "interruptionFilter = [" + interruptionFilter + "]");
-        currentInterruptionFilter = interruptionFilter;
-    }
 
-    @Override
-    public void onNotificationPosted(StatusBarNotification sbn) {
-        Log.d(TAG, "onNotificationPosted()");
+        currentZenMode = interruptionFilter;
+        reportZenModeState(this);
     }
 
     private class CommandReceiver extends BroadcastReceiver {
@@ -77,13 +76,26 @@ public class ZenModeNotificationService extends NotificationListenerService {
         public void onReceive(Context context, Intent intent) {
             Log.i(TAG, "onReceive() called with action = [" + intent.getAction() + "]");
 
-            if (ACTION_REQUEST_INTERRUPTION_SETTING.equals(intent.getAction())) {
-                Intent response = new Intent(ACTION_RESPONSE_INTERRUPTION_SETTING);
-                response.putExtra(EXTRA_INTERRUPTION_SETTING, currentInterruptionFilter);
+            if (ACTION_REQUEST_CURRENT_ZENMODE.equals(intent.getAction())) {
+                reportZenModeState(context);
+            }
 
-                Log.i(TAG, "sending back response about interruption setting");
-                LocalBroadcastManager.getInstance(context).sendBroadcast(response);
+            if (ACTION_REQUEST_SET_ZENMODE.equals(intent.getAction())) {
+                int newMode = intent.getIntExtra(EXTRA_ZENMODE_SETTING, 0);
+
+                Log.i(TAG, "setting new interruption setting: " + newMode);
+                if (newMode > 0) {
+                    requestInterruptionFilter(newMode);
+                }
             }
         }
+    }
+
+    private void reportZenModeState(Context context) {
+        Intent response = new Intent(ACTION_RESPONSE_CURRENT_ZENMODE);
+        response.putExtra(EXTRA_ZENMODE_SETTING, currentZenMode);
+
+        Log.i(TAG, "sending back response about interruption setting: " + currentZenMode);
+        LocalBroadcastManager.getInstance(context).sendBroadcast(response);
     }
 }
