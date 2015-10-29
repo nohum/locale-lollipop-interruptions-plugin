@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">Interruptions Locale Plugin</string>
+    <string name="notification_access_title">Enable notification access</string>
+    <string name="notification_access_message">You have to enable notification access. Press OK and check the list entry of this app</string>
+</resources>
