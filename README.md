@@ -3,7 +3,7 @@ Interruptions Locale Plugin
 
 A Locale plugin to modify the Lollipop interruption setting (also known as "zen mode") programatically.
 The plugin supports setting the interruption setting to the modes all, priority or none. However, due
-to Android API limitations, setting the mode only supports the indefinite time constraint.
+to Android API limitations, setting the mode activates the indefinite time constraint.
 
 Build variants
 --------------
