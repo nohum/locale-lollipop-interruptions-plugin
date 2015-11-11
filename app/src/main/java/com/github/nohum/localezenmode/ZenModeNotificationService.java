@@ -4,7 +4,6 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.os.IBinder;
 import android.service.notification.NotificationListenerService;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
@@ -26,7 +25,6 @@ public class ZenModeNotificationService extends NotificationListenerService {
     private int currentZenMode = 0;
 
     public ZenModeNotificationService() {
-        // pass
     }
 
     @Override
@@ -51,23 +49,23 @@ public class ZenModeNotificationService extends NotificationListenerService {
     }
 
     @Override
-    public IBinder onBind(Intent intent) {
-        return super.onBind(intent);
-    }
-
-    @Override
     public void onListenerConnected() {
-        Log.d(TAG, "onListenerConnected");
-
         currentZenMode = getCurrentInterruptionFilter();
     }
 
     @Override
     public void onInterruptionFilterChanged(int interruptionFilter) {
-        Log.i(TAG, "onInterruptionFilterChanged() called with " + "interruptionFilter = [" + interruptionFilter + "]");
+        Log.i(TAG, "onInterruptionFilterChanged() called with interruptionFilter = [" + interruptionFilter + "]");
 
         currentZenMode = interruptionFilter;
         reportZenModeState(this);
+    }
+
+    public static Intent requestIntent(int mode) {
+        Intent request = new Intent(ZenModeNotificationService.ACTION_REQUEST_SET_ZENMODE);
+        request.putExtra(ZenModeNotificationService.EXTRA_ZENMODE_SETTING, mode);
+
+        return request;
     }
 
     private class CommandReceiver extends BroadcastReceiver {

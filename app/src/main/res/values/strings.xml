@@ -12,4 +12,8 @@
     <string name="current_state_priority">priority</string>
     <string name="current_state_none">none</string>
     <string name="current_state_unknown">unknown</string>
+
+    <string name="select_setting">Which interruption setting should be activated upon firing this plugin?</string>
+    <string name="locale_blurb_update_zen_mode">Update interruption setting to: %s</string>
+    <string name="button_accept_settings">Finished</string>
 </resources>

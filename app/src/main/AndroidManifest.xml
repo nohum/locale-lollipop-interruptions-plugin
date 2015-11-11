@@ -8,7 +8,7 @@
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/AppTheme" >
-        <activity android:name="com.github.nohum.localezenmode.SettingsActivity" >
+        <activity android:name=".TestActivity" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -17,13 +17,43 @@
         </activity>
 
         <service
-            android:name="com.github.nohum.localezenmode.ZenModeNotificationService"
+            android:name=".ZenModeNotificationService"
             android:label="@string/app_name"
             android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE" >
             <intent-filter>
                 <action android:name="android.service.notification.NotificationListenerService" />
             </intent-filter>
         </service>
+
+        <!-- private -->
+        <activity
+            android:name=".EditSettingActivity"
+            android:exported="false"
+            android:icon="@mipmap/ic_launcher"
+            android:label="@string/app_name" >
+        </activity>
+
+        <!-- public API for Locale -->
+        <activity-alias
+            android:name=".EditActivity"
+            android:exported="true"
+            android:icon="@mipmap/ic_launcher"
+            android:label="@string/app_name"
+            android:targetActivity=".EditSettingActivity">
+            <intent-filter>
+                <!-- For a plug-in setting, use EDIT_SETTING instead. -->
+                <action android:name="com.twofortyfouram.locale.intent.action.EDIT_SETTING"/>
+            </intent-filter>
+        </activity-alias>
+
+        <receiver
+            android:name=".receiver.ChangeSettingReceiver"
+            android:enabled="true"
+            android:exported="true" >
+            <intent-filter>
+                <action android:name="com.twofortyfouram.locale.intent.action.FIRE_SETTING" />
+            </intent-filter>
+        </receiver>
     </application>
 
 </manifest>
