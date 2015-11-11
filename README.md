@@ -9,7 +9,7 @@ Build variants
 --------------
 
 Building the plugin using the `pluginOnlyRelease` variant should be enough. The `additionalActivity`
-flavor include an extra activity useful for debugging purposes.
+flavor include an extra activity useful for debugging purposes. Alternatively, use [the provided APK](interruptions-locale-release-v1.0.apk).
 
 Usage
 -----
