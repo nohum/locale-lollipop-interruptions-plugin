@@ -11,6 +11,15 @@ Build variants
 Building the plugin using the `pluginOnlyRelease` variant should be enough. The `additionalActivity`
 flavor include an extra activity useful for debugging purposes.
 
+Usage
+-----
+
+After installing the app, any Locale-compatible host application (like Locale itself or
+[Llama](https://play.google.com/store/apps/details?id=com.kebab.Llama)) should provide a plugin entry
+called "Interruptions Locale Plugin" to configure the plugin. Nevertheless, before this plugin can be
+used, you have to grant it notification access. This condition is checked every time you open the
+settings of this plugin.
+
 License
 -------
 
