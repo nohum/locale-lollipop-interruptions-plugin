@@ -38,7 +38,6 @@ public class EditSettingActivity extends AbstractLocalePluginActivity
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setTheme(R.style.AppTheme);
         setContentView(R.layout.activity_edit);
 
         modeAll = (RadioButton) findViewById(R.id.mode_all);
